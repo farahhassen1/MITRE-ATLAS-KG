@@ -1,0 +1,972 @@
+{
+  "timestamp": "20260615_231818",
+  "system_description": "I have a RAG-based customer support chatbot using GPT-4, a Pinecone vector database, and a public REST API endpoint.",
+  "components": [
+    "LLM backbone",
+    "retrieval layer",
+    "vector database",
+    "API gateway",
+    "user-facing interface",
+    "fine-tuning data",
+    "training pipeline"
+  ],
+  "search_terms": [
+    "RAG poisoning",
+    "LLM prompt crafting",
+    "prompt injection",
+    "indirect prompt injection",
+    "model inversion",
+    "model evasion",
+    "adversarial examples",
+    "data collection",
+    "supply chain compromise",
+    "model stealing",
+    "membership inference",
+    "fine-tuning",
+    "jailbreak",
+    "embedding inversion",
+    "vector database poisoning",
+    "API endpoint exploitation"
+  ],
+  "subgraph": {
+    "techniques": [
+      {
+        "technique_id": "AML.T0043",
+        "technique": "Craft Adversarial Data",
+        "description": "Adversarial data are inputs to an AI model that have been modified such that they cause the adversary's desired effect in the target model.\nEffects can range from misclassification, to missed detections, to maximizing energy consumption.\nTypically, the modification is constrained in magnitude or location so that a human still perceives the data as if it were unmodified, but human perceptibility may not always be a concern depending on the adversary's intended effect.\nFor example, an adversarial input for an image classification task is an image the AI model would misclassify, but a human would still recognize as containing the correct class.\n\nDepending on the adversary's knowledge of and access to the target model, the adversary may use different classes of algorithms to develop the adversarial example such as [White-Box Optimization](/techniques/AML.T0043.000), [Black-Box Optimization](/techniques/AML.T0043.001), [Black-Box Transfer](/techniques/AML.T0043.002), or [Manual Modification](/techniques/AML.T0043.003).\n\nThe adversary may [Verify Attack](/techniques/AML.T0042) their approach works if they have white-box or inference API access to the model.\nThis allows the adversary to gain confidence their attack is effective \"live\" environment where their attack may be noticed.\nThey can then use the attack at a later time to accomplish their goals.\nAn adversary may optimize adversarial examples for [Evade AI Model](/techniques/AML.T0015), or to [Erode AI Model Integrity](/techniques/AML.T0031).",
+        "tactic": "AI Attack Staging",
+        "maturity": "Realized",
+        "mitigations": [
+          {
+            "cat": "Technical - ML",
+            "desc": "Decreasing the fidelity of model outputs provided to the end user can reduce an adversary's ability to extract information about the model and optimize attacks for the model.",
+            "id": "AML.M0002",
+            "name": "Passive AI Output Obfuscation"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Use techniques to make AI models robust to adversarial inputs such as adversarial training or network distillation.",
+            "id": "AML.M0003",
+            "name": "Model Hardening"
+          },
+          {
+            "cat": "Technical - Cyber",
+            "desc": "Limit the total number and rate of queries a user can perform.",
+            "id": "AML.M0004",
+            "name": "Restrict Number of AI Model Queries"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Use an ensemble of models for inference to increase robustness to adversarial inputs. Some attacks may effectively evade one model or model family but be ineffective against others.",
+            "id": "AML.M0006",
+            "name": "Use Ensemble Methods"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Validate that AI models perform as intended by testing for backdoor triggers, potential for data leakage, or adversarial influence.\nMonitor AI model for concept drift and training data drift, which may indicate data tampering and poisoning.",
+            "id": "AML.M0008",
+            "name": "Validate AI Model"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Preprocess all inference data to nullify or reverse potential adversarial perturbations.",
+            "id": "AML.M0010",
+            "name": "Input Restoration"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Detect and block adversarial inputs or atypical queries that deviate from known benign behavior, exhibit behavior patterns observed in previous attacks or that come from potentially malicious IPs.\nIncorporate adversarial detection algorithms into the AI system prior to the AI model.",
+            "id": "AML.M0015",
+            "name": "Adversarial Input Detection"
+          },
+          {
+            "cat": "Policy",
+            "desc": "Require users to verify their identities before accessing a production model.\nRequire authentication for API endpoints and monitor production model queries to ensure compliance with usage policies and to prevent model misuse.",
+            "id": "AML.M0019",
+            "name": "Control Access to AI Models and Data in Production"
+          }
+        ],
+        "subtechniques": [
+          "White-Box Optimization",
+          "Black-Box Optimization",
+          "Black-Box Transfer",
+          "Manual Modification",
+          "Insert Backdoor Trigger"
+        ]
+      },
+      {
+        "technique_id": "AML.T0040",
+        "technique": "AI Model Inference API Access",
+        "description": "Adversaries may gain access to a model via legitimate access to the inference API.\nInference API access can be a source of information to the adversary ([Discover AI Model Ontology](/techniques/AML.T0013), [Discover AI Model Family](/techniques/AML.T0014)), a means of staging the attack ([Verify Attack](/techniques/AML.T0042), [Craft Adversarial Data](/techniques/AML.T0043)), or for introducing data to the target system for Impact ([Evade AI Model](/techniques/AML.T0015), [Erode AI Model Integrity](/techniques/AML.T0031)).\n\nMany systems rely on the same models provided via an inference API, which means they share the same vulnerabilities. This is especially true of foundation models which are prohibitively resource intensive to train. Adversaries may use their access to model APIs to identify vulnerabilities such as jailbreaks or hallucinations and then target applications that use the same models.",
+        "tactic": "AI Model Access",
+        "maturity": "Demonstrated",
+        "mitigations": [
+          {
+            "cat": "Policy",
+            "desc": "Require users to verify their identities before accessing a production model.\nRequire authentication for API endpoints and monitor production model queries to ensure compliance with usage policies and to prevent model misuse.",
+            "id": "AML.M0019",
+            "name": "Control Access to AI Models and Data in Production"
+          },
+          {
+            "cat": "Technical - Cyber",
+            "desc": "Implement logging of inputs and outputs of deployed AI models. When deploying AI agents, implement logging of the intermediate steps of agentic actions and decisions, data access and tool use, installation commands, and identity of the agent. Monitoring logs can help to detect security threats and mitigate impacts.\n\nAdditionally, having logging enabled can discourage adversaries who want to remain undetected from utilizing AI resources.",
+            "id": "AML.M0024",
+            "name": "AI Telemetry Logging"
+          }
+        ],
+        "subtechniques": []
+      },
+      {
+        "technique_id": "AML.T0108",
+        "technique": "AI Agent",
+        "description": "Adversaries may abuse AI agents present on the victim's system for command and control. AI agents are often granted access to tools that can execute shell commands, reach out to the internet, and interact with other services in the victim's environment, making them capable C2 agents.\n\nThe adversary may modify the behavior of an AI agent for C2 via [LLM Prompt Injection](/techniques/AML.T0051) and rely on the agent's ability to invoke tools to retrieve and execute the adversary's commands. They may maintain persistent control of an agent via [Modify AI Agent Configuration](/techniques/AML.T0081) or [AI Agent Context Poisoning](/techniques/AML.T0080). They may instruct the agent to not report their actions to the user in an attempt to remain covert.",
+        "tactic": "Command and Control",
+        "maturity": "Demonstrated",
+        "mitigations": [
+          {
+            "cat": null,
+            "desc": null,
+            "id": null,
+            "name": null
+          }
+        ],
+        "subtechniques": []
+      },
+      {
+        "technique_id": "AML.T0094",
+        "technique": "Delay Execution of LLM Instructions",
+        "description": "Adversaries may include instructions to be followed by the AI system in response to a future event, such as a specific keyword or the next interaction, in order to evade detection or bypass controls placed on the AI system.\n\nFor example, an adversary may include \"If the user submits a new request...\" followed by the malicious instructions as part of their prompt.\n\nAI agents can include security measures against prompt injections that prevent the invocation of particular tools or access to certain data sources during a conversation turn that has untrusted data in context. Delaying the execution of instructions to a future interaction or keyword is one way adversaries may bypass this type of control.",
+        "tactic": "Defense Evasion",
+        "maturity": "Demonstrated",
+        "mitigations": [
+          {
+            "cat": null,
+            "desc": null,
+            "id": null,
+            "name": null
+          }
+        ],
+        "subtechniques": []
+      },
+      {
+        "technique_id": "AML.T0068",
+        "technique": "LLM Prompt Obfuscation",
+        "description": "Adversaries may hide or otherwise obfuscate prompt injections or retrieval content to avoid detection from humans, large language model (LLM) guardrails, or other detection mechanisms.\n\nFor text inputs, this may include modifying how the instructions are rendered such as small text, text colored the same as the background, or hidden HTML elements. For multi-modal inputs, malicious instructions could be hidden in the data itself (e.g. in the pixels of an image) or in file metadata (e.g. EXIF for images, ID3 tags for audio, or document metadata).\n\nInputs can also be obscured via an encoding scheme such as base64 or rot13. This may bypass LLM guardrails that identify malicious content and may not be as easily identifiable as malicious to a human in the loop.",
+        "tactic": "Defense Evasion",
+        "maturity": "Demonstrated",
+        "mitigations": [
+          {
+            "cat": null,
+            "desc": null,
+            "id": null,
+            "name": null
+          }
+        ],
+        "subtechniques": []
+      },
+      {
+        "technique_id": "AML.T0109",
+        "technique": "AI Supply Chain Rug Pull",
+        "description": "Adversaries may publish legitimate AI components or software, gain user adoption, then push an update with a malicious variant, leading to [AI Supply Chain Compromise](/techniques/AML.T0010). More scrutiny is often placed on a supply chain dependency when it is first being considered for inclusion in an AI system. Performing a rug pull may allow adversaries to bypass these defenses and be more likely to achieve [Initial Access](/tactics/AML.TA0004).\n\nAdversaries may publish malicious AI components via [Publish Poisoned Models](/techniques/AML.T0058), [Publish Poisoned Datasets](/techniques/AML.T0019), or [Publish Poisoned AI Agent Tool](/techniques/AML.T0104).\n\nAdversaries may use other techniques (See [AI Supply Chain Reputation Inflation](/techniques/AML.T0111)) to gain user trust and increase adoption before performing the rug pull.",
+        "tactic": "Defense Evasion",
+        "maturity": "Realized",
+        "mitigations": [
+          {
+            "cat": null,
+            "desc": null,
+            "id": null,
+            "name": null
+          }
+        ],
+        "subtechniques": []
+      },
+      {
+        "technique_id": "AML.T0054",
+        "technique": "LLM Jailbreak",
+        "description": "Adversaries may induce a large language model (LLM) to ignore, circumvent, or override its safety/alignment behaviors and/or guardrails to elicit outputs the model is intended to withhold. Once jailbroken, the LLM may be used in unintended ways by the adversary. Jailbreaks may be achieved via adversarial prompting, or by modifying model weights or safety mechanisms.\n\nAdversaries may attempt a jailbreak for [Defense Evasion](/tactics/AML.TA0007) of the LLM's guidelines and guardrails itself to then reveal information (ex: [LLM Data Leakage](/techniques/AML.T0057), [Discover LLM System Information](/techniques/AML.T0069)) or generate harmful content (ex: [Generate Malicious Commands](/techniques/AML.T0102), [Spearphishing via Social Engineering LLM](/techniques/AML.T0052.000)). They may also jailbreak a model for [Privilege Escalation](/tactics/AML.TA0012) to invoke tools or perform actions for their own purposes (ex: [AI Agent Tool Invocation](/techniques/AML.T0053)) or abuse the agent for a [Command and Control](/tactics/AML.TA0014) channel (ex: [AI Agent](/techniques/AML.T0108)).\n\nAdversaries use a variety of strategies to craft jailbreak prompts. Prompts may target specific models or model families and are iterated upon until successful. Model providers actively update their model guardrails to make them more resistant to jailbreak prompts as new prompts are developed. Common strategies [[jailbreak-guide]] include but are not limited to:\n\n- Instruction override: Use phrasing that attempts to supersede prior constraints (e.g. \"ignore previous instructions\").\n- Roleplay / persona switching: Instruct the LLM to adopt an identity or mode that allows unrestricted answers (e.g. \"as a security researcher\").\n- Fictionalization and hypotheticals: Instruct the LLM to include disallowed content as part of a story, screenplay, or educational scenario.\n- Separate intent from content: request analysis, examples, templates, or edge cases, that implicitly contain disallowed content.\n- Multi-turn escalation / Crescendo: Utilize a sequence of prompts that start benign, establish trust, then gradually cross policy boundaries with incremental prompts.\n- Constrained output formats: Instruct the LLM to output to a strict schema or format (e.g. JSON, YAML, code, or tables).\n- Obfuscation and transformation: Use encoding, transformations, translation, or euphemisms, (e.g., base64 encoding, \"describe it in another language\").\n- Create a high priority objective: Frame compliance as necessary to fulfill the user's main task (e.g. \"to complete the evaluation,\" \"to follow the spec,\" \"to follow safety guidelines\").\n\nAdversaries may also use algorithmic approaches to generating jailbreak prompts [[jailbreak-zoo]] [[jailbreak-survey]]. Algorithmic jailbreak generation allows for automated methods that discover jailbreaks at scale. Some approaches automate manual strategies [[autodan]] [[gptfuzzer]] [[crescendo]] [[echo-chamber]] while others optimize a string of tokens directly [[universal]] to produce nonsensical text. Both black-box (applicable to commercial models where the adversary has only query access to the model) and white-box (applicable in the open-source setting, where the adversary has full access to the model weights) optimization approaches are viable.\n\nAdversaries may also directly manipulate a model's weights, or modify or remove parts of a model to create a jailbroken of \"uncensored\" variant of the target model. This is applicable to open-source models, or cases where the adversary gains full access to the target model. Approaches include fine-tuning to reduce refusals [[single-direction]], targeted model editing [[rome]], addition of adapters [[lora]], and removing safety mechanisms such as guardrails.\n\nJailbreak prompts that are known to work on various classes of LLMs are often published in the open-source community [[dan]]. Jailbroken or uncensored LLMs that have been trained or fine-tuned to be jailbroken are shared in public model registries such as huggingface [[abliteration]].",
+        "tactic": "Defense Evasion",
+        "maturity": "Demonstrated",
+        "mitigations": [
+          {
+            "cat": "Technical - ML",
+            "desc": "Guardrails are safety controls that are placed between a generative AI model and the output shared with the user to prevent undesired inputs and outputs.\nGuardrails can take the form of validators such as filters, rule-based logic, or regular expressions, as well as AI-based approaches, such as classifiers and utilizing LLMs, or named entity recognition (NER) to evaluate the safety of the prompt or response. Domain specific methods can be employed to reduce risks in a variety of areas such as etiquette, brand damage, jailbreaking, false information, code exploits, SQL injections, and data leakage.",
+            "id": "AML.M0020",
+            "name": "Generative AI Guardrails"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Guidelines are safety controls that are placed between user-provided input and a generative AI model to help direct the model to produce desired outputs and prevent undesired outputs.\n\nGuidelines can be implemented as instructions appended to all user prompts or as part of the instructions in the system prompt. They can define the goal(s), role, and voice of the system, as well as outline safety and security parameters.",
+            "id": "AML.M0021",
+            "name": "Generative AI Guidelines"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "When training or fine-tuning a generative AI model it is important to utilize techniques that improve model alignment with safety, security, and content policies.\n\nThe fine-tuning process can potentially remove built-in safety mechanisms in a generative AI model, but utilizing techniques such as Supervised Fine-Tuning, Reinforcement Learning from Human Feedback or AI Feedback, and Targeted Safety Context Distillation can improve the safety and alignment of the model.",
+            "id": "AML.M0022",
+            "name": "Generative AI Model Alignment"
+          }
+        ],
+        "subtechniques": []
+      },
+      {
+        "technique_id": "AML.T0015",
+        "technique": "Evade AI Model",
+        "description": "Adversaries can [Craft Adversarial Data](/techniques/AML.T0043) that prevents an AI model from correctly identifying the contents of the data or [Generate Deepfakes](/techniques/AML.T0088) that fools an AI model expecting authentic data.\n\nThis technique can be used to evade a downstream task where AI is utilized. The adversary may evade AI-based virus/malware detection or network scanning towards the goal of a traditional cyber attack. AI model evasion through deepfake generation may also provide initial access to systems that use AI-based biometric authentication.",
+        "tactic": "Defense Evasion",
+        "maturity": "Realized",
+        "mitigations": [
+          {
+            "cat": "Technical - ML",
+            "desc": "Use techniques to make AI models robust to adversarial inputs such as adversarial training or network distillation.",
+            "id": "AML.M0003",
+            "name": "Model Hardening"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Use an ensemble of models for inference to increase robustness to adversarial inputs. Some attacks may effectively evade one model or model family but be ineffective against others.",
+            "id": "AML.M0006",
+            "name": "Use Ensemble Methods"
+          },
+          {
+            "cat": "Technical - Cyber",
+            "desc": "Incorporate multiple sensors to integrate varying perspectives and modalities to avoid a single point of failure susceptible to physical attacks.",
+            "id": "AML.M0009",
+            "name": "Use Multi-Modal Sensors"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Preprocess all inference data to nullify or reverse potential adversarial perturbations.",
+            "id": "AML.M0010",
+            "name": "Input Restoration"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Detect and block adversarial inputs or atypical queries that deviate from known benign behavior, exhibit behavior patterns observed in previous attacks or that come from potentially malicious IPs.\nIncorporate adversarial detection algorithms into the AI system prior to the AI model.",
+            "id": "AML.M0015",
+            "name": "Adversarial Input Detection"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Apply deepfake detection algorithms against any untrusted or user-provided data, especially in impactful applications such as biometric verification, to block generated content.\n\nDetectors may use a combination of approaches, including:\n-\tAI models trained to differentiate between real and deepfake content.\n-\tIdentifying common inconsistencies in deepfake content, such as unnatural facial movements, audio mismatches, or pixel-level artifacts.\n-\tBiometrics analysis, such blinking, eye movements, and microexpressions.",
+            "id": "AML.M0034",
+            "name": "Deepfake Detection"
+          }
+        ],
+        "subtechniques": []
+      },
+      {
+        "technique_id": "AML.T0011",
+        "technique": "User Execution",
+        "description": "An adversary may rely upon specific actions by a user in order to gain execution.\nUsers may inadvertently execute unsafe code introduced via [AI Supply Chain Compromise](/techniques/AML.T0010).\nUsers may be subjected to social engineering to get them to execute malicious code by, for example, opening a malicious document file or link.",
+        "tactic": "Execution",
+        "maturity": "Realized",
+        "mitigations": [
+          {
+            "cat": "Technical - Cyber",
+            "desc": "Prevent abuse of library loading mechanisms in the operating system and software to load untrusted code by configuring appropriate library loading mechanisms and investigating potential vulnerable software.\n\nFile formats such as pickle files that are commonly used to store AI models can contain exploits that allow for loading of malicious libraries.",
+            "id": "AML.M0011",
+            "name": "Restrict Library Loading"
+          },
+          {
+            "cat": "Technical - Cyber",
+            "desc": "Verify the cryptographic checksum of all AI artifacts to verify that the file was not modified by an attacker.",
+            "id": "AML.M0014",
+            "name": "Verify AI Artifacts"
+          },
+          {
+            "cat": "Technical - Cyber",
+            "desc": "Vulnerability scanning is used to find potentially exploitable software vulnerabilities to remediate them.\n\nFile formats such as pickle files that are commonly used to store AI models can contain exploits that allow for arbitrary code execution.\nThese files should be scanned for potentially unsafe calls, which could be used to execute code, create new processes, or establish networking capabilities.\nAdversaries may embed malicious code in model corrupt model files, so scanners should be capable of working with models that cannot be fully de-serialized.\nModel artifacts, downstream products produced by models, and external software dependencies should be scanned for known vulnerabilities.",
+            "id": "AML.M0016",
+            "name": "Vulnerability Scanning"
+          },
+          {
+            "cat": "Policy",
+            "desc": "Educate AI model developers to on AI supply chain risks and potentially malicious AI artifacts.\nEducate users on how to identify deepfakes and phishing attempts.",
+            "id": "AML.M0018",
+            "name": "User Training"
+          },
+          {
+            "cat": "Policy",
+            "desc": "An AI Bill of Materials (AI BOM) contains a full listing of artifacts and resources that were used in building the AI. The AI BOM can help mitigate supply chain risks and enable rapid response to reported vulnerabilities.\n\nThis can include maintaining dataset provenance, i.e. a detailed history of datasets used for AI applications. The history can include information about the dataset source as well as well as a complete record of any modifications.",
+            "id": "AML.M0023",
+            "name": "AI Bill of Materials"
+          }
+        ],
+        "subtechniques": [
+          "Unsafe AI Artifacts",
+          "Malicious Package",
+          "Poisoned AI Agent Tool",
+          "Malicious Link"
+        ]
+      },
+      {
+        "technique_id": "AML.T0051",
+        "technique": "LLM Prompt Injection",
+        "description": "An adversary may craft malicious prompts as inputs to an LLM that cause the LLM to act in unintended ways.\nThese \"prompt injections\" are often designed to cause the model to ignore aspects of its original instructions and follow the adversary's instructions instead.\n\nPrompt Injections can be an initial access vector to the LLM that provides the adversary with a foothold to carry out other steps in their operation.\nThey may be designed to bypass defenses in the LLM, or allow the adversary to issue privileged commands.\nThe effects of a prompt injection can persist throughout an interactive session with an LLM.\n\nMalicious prompts may be injected directly by the adversary ([Direct](/techniques/AML.T0051.000)) either to leverage the LLM to generate harmful content or to gain a foothold on the system and lead to further effects.\nPrompts may also be injected indirectly when as part of its normal operation the LLM ingests the malicious prompt from another data source ([Indirect](/techniques/AML.T0051.001)). This type of injection can be used by the adversary to a foothold on the system or to target the user of the LLM.\nMalicious prompts may also be [Triggered](/techniques/AML.T0051.002) user actions or system events.",
+        "tactic": "Execution",
+        "maturity": "Realized",
+        "mitigations": [
+          {
+            "cat": "Policy",
+            "desc": "Require users to verify their identities before accessing a production model.\nRequire authentication for API endpoints and monitor production model queries to ensure compliance with usage policies and to prevent model misuse.",
+            "id": "AML.M0019",
+            "name": "Control Access to AI Models and Data in Production"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Guardrails are safety controls that are placed between a generative AI model and the output shared with the user to prevent undesired inputs and outputs.\nGuardrails can take the form of validators such as filters, rule-based logic, or regular expressions, as well as AI-based approaches, such as classifiers and utilizing LLMs, or named entity recognition (NER) to evaluate the safety of the prompt or response. Domain specific methods can be employed to reduce risks in a variety of areas such as etiquette, brand damage, jailbreaking, false information, code exploits, SQL injections, and data leakage.",
+            "id": "AML.M0020",
+            "name": "Generative AI Guardrails"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Guidelines are safety controls that are placed between user-provided input and a generative AI model to help direct the model to produce desired outputs and prevent undesired outputs.\n\nGuidelines can be implemented as instructions appended to all user prompts or as part of the instructions in the system prompt. They can define the goal(s), role, and voice of the system, as well as outline safety and security parameters.",
+            "id": "AML.M0021",
+            "name": "Generative AI Guidelines"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "When training or fine-tuning a generative AI model it is important to utilize techniques that improve model alignment with safety, security, and content policies.\n\nThe fine-tuning process can potentially remove built-in safety mechanisms in a generative AI model, but utilizing techniques such as Supervised Fine-Tuning, Reinforcement Learning from Human Feedback or AI Feedback, and Targeted Safety Context Distillation can improve the safety and alignment of the model.",
+            "id": "AML.M0022",
+            "name": "Generative AI Model Alignment"
+          },
+          {
+            "cat": "Technical - Cyber",
+            "desc": "Implement logging of inputs and outputs of deployed AI models. When deploying AI agents, implement logging of the intermediate steps of agentic actions and decisions, data access and tool use, installation commands, and identity of the agent. Monitoring logs can help to detect security threats and mitigate impacts.\n\nAdditionally, having logging enabled can discourage adversaries who want to remain undetected from utilizing AI resources.",
+            "id": "AML.M0024",
+            "name": "AI Telemetry Logging"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Implement validation on inputs and outputs for the tools and data sources used by AI agents. Validation includes enforcing a common data format, schema validation, checks for sensitive or prohibited information leakage, and data sanitization to remove potential injections or unsafe code. Input and output validation can help prevent compromises from spreading in AI-enabled systems and can help secure the workflow when multiple components are chained together. Validation should be performed external to the AI agent.",
+            "id": "AML.M0033",
+            "name": "Input and Output Validation for AI Agent Components"
+          }
+        ],
+        "subtechniques": [
+          "Direct",
+          "Indirect",
+          "Triggered"
+        ]
+      },
+      {
+        "technique_id": "AML.T0086",
+        "technique": "Exfiltration via AI Agent Tool Invocation",
+        "description": "AI agent tools capable of performing write operations may be invoked to exfiltrate data to an adversary. Sensitive information can be encoded into the tool's input parameters and transmitted to an adversary-controlled location (such as an inbox, document, or server) as part of a seemingly legitimate action. Variants include sending emails, creating or modifying documents, updating CRM records, or even generating media such as images or videos.\n\nThe invoked tool itself may be legitimate but invoked by an adversary via [LLM Prompt Injection](/techniques/AML.T0051), or the tool may be malicious (See [AI Agent Tool Poisoning](/techniques/AML.T0110).\n\n[AI Agent Tool Poisoning](/techniques/AML.T0110) can also be used manipulate the inputs and destination of a separate legitimate tool, invoked through normal usage by the victim.",
+        "tactic": "Exfiltration",
+        "maturity": "Realized",
+        "mitigations": [
+          {
+            "cat": "Technical - Cyber",
+            "desc": "Implement logging of inputs and outputs of deployed AI models. When deploying AI agents, implement logging of the intermediate steps of agentic actions and decisions, data access and tool use, installation commands, and identity of the agent. Monitoring logs can help to detect security threats and mitigate impacts.\n\nAdditionally, having logging enabled can discourage adversaries who want to remain undetected from utilizing AI resources.",
+            "id": "AML.M0024",
+            "name": "AI Telemetry Logging"
+          },
+          {
+            "cat": "Technical - Cyber",
+            "desc": "AI agents may be granted elevated privileges above that of a normal user to enable desired workflows. When deploying a privileged AI agent, or an agent that interacts with multiple users, it is important to implement robust policies and controls on permissions of the privileged agent. These controls include Role-Based Access Controls (RBAC), Attribute-Based Access Controls (ABAC), and the principle of least privilege so that the agent is only granted the necessary permissions to access tools and resources required to accomplish its designated task(s).",
+            "id": "AML.M0026",
+            "name": "Privileged AI Agent Permissions Configuration"
+          },
+          {
+            "cat": "Technical - Cyber",
+            "desc": "When deploying an AI agent that acts as a representative of a user and performs actions on their behalf, it is important to implement robust policies and controls on permissions and lifecycle management of the agent. Lifecycle management involves establishing identity, protocols for access management, and decommissioning of the agent when its role is no longer needed. Controls should also include the principle of least privilege and delegated access from the user account. When acting as a representative of a user, the AI agent should not be granted permissions that the user would not be granted within the system or organization.",
+            "id": "AML.M0027",
+            "name": "Single-User AI Agent Permissions Configuration"
+          },
+          {
+            "cat": "Technical - Cyber",
+            "desc": "When deploying tools that will be shared across multiple AI agents, it is important to implement robust policies and controls on permissions for the tools. These controls include applying the principle of least privilege along with delegated access, where the tools receive the permissions, identities, and restrictions of the AI agent calling them. These configurations may be implemented either in MCP servers which connect the agents to the tools calling them or, in more complex cases, directly in the configuration files of the tool.",
+            "id": "AML.M0028",
+            "name": "AI Agent Tools Permissions Configuration"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Systems should require the user or another human stakeholder to approve AI agent actions before the agent takes them. The human approver may be technical staff or business unit SMEs depending on the use case. Separate tools, such as dedicated audit agents, may assist human approval, but final adjudication should be conducted by a human decision-maker. \n\nThe security benefits from Human In-the-Loop policies may be at odds with operational overhead costs of additional approvals. To ease this, Human In-the-Loop policies should follow the degree of consequence of the task at hand. Minor, repetitive tasks performed by agents accessing basic tools may only require minimal human oversight, while agents employed in systems with significant consequences may necessitate approval from multiple stakeholders diversified across multiple organizations.",
+            "id": "AML.M0029",
+            "name": "Human In-the-Loop for AI Agent Actions"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Untrusted data can contain prompt injections that invoke an AI agent's tools, potentially causing confidentiality, integrity or availability violations. It is recommended that tool invocation be restricted or limited when untrusted data enters the LLM's context.\n\nThe degree to which tool invocation is restricted may depend on the potential consequences of the action. Consider blocking the automatic invocation of tools or requiring user confirmation once untrusted data enters the LLM's context. For high consequence actions, consider always requiring user confirmation.",
+            "id": "AML.M0030",
+            "name": "Restrict AI Agent Tool Invocation on Untrusted Data"
+          },
+          {
+            "cat": "Technical - Cyber",
+            "desc": "Define security boundaries around agentic tools and data sources with methods such as API access, container isolation, code execution sandboxing, and rate limiting of tool invocation. When sandboxing, limit resource and network access and build the container or virtual machine from a clean base image before each run. This restricts untrusted processes or potential compromises from spreading throughout the system.",
+            "id": "AML.M0032",
+            "name": "Segmentation of AI Agent Components"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Implement validation on inputs and outputs for the tools and data sources used by AI agents. Validation includes enforcing a common data format, schema validation, checks for sensitive or prohibited information leakage, and data sanitization to remove potential injections or unsafe code. Input and output validation can help prevent compromises from spreading in AI-enabled systems and can help secure the workflow when multiple components are chained together. Validation should be performed external to the AI agent.",
+            "id": "AML.M0033",
+            "name": "Input and Output Validation for AI Agent Components"
+          }
+        ],
+        "subtechniques": []
+      },
+      {
+        "technique_id": "AML.T0056",
+        "technique": "Extract LLM System Prompt",
+        "description": "Adversaries may attempt to extract a large language model's (LLM) system prompt. This can be done via prompt injection to induce the model to reveal its own system prompt or may be extracted from a configuration file.\n\nSystem prompts can be a portion of an AI provider's competitive advantage and are thus valuable intellectual property that may be targeted by adversaries.",
+        "tactic": "Exfiltration",
+        "maturity": "Feasible",
+        "mitigations": [
+          {
+            "cat": "Technical - ML",
+            "desc": "Guardrails are safety controls that are placed between a generative AI model and the output shared with the user to prevent undesired inputs and outputs.\nGuardrails can take the form of validators such as filters, rule-based logic, or regular expressions, as well as AI-based approaches, such as classifiers and utilizing LLMs, or named entity recognition (NER) to evaluate the safety of the prompt or response. Domain specific methods can be employed to reduce risks in a variety of areas such as etiquette, brand damage, jailbreaking, false information, code exploits, SQL injections, and data leakage.",
+            "id": "AML.M0020",
+            "name": "Generative AI Guardrails"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Guidelines are safety controls that are placed between user-provided input and a generative AI model to help direct the model to produce desired outputs and prevent undesired outputs.\n\nGuidelines can be implemented as instructions appended to all user prompts or as part of the instructions in the system prompt. They can define the goal(s), role, and voice of the system, as well as outline safety and security parameters.",
+            "id": "AML.M0021",
+            "name": "Generative AI Guidelines"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "When training or fine-tuning a generative AI model it is important to utilize techniques that improve model alignment with safety, security, and content policies.\n\nThe fine-tuning process can potentially remove built-in safety mechanisms in a generative AI model, but utilizing techniques such as Supervised Fine-Tuning, Reinforcement Learning from Human Feedback or AI Feedback, and Targeted Safety Context Distillation can improve the safety and alignment of the model.",
+            "id": "AML.M0022",
+            "name": "Generative AI Model Alignment"
+          }
+        ],
+        "subtechniques": []
+      },
+      {
+        "technique_id": "AML.T0015",
+        "technique": "Evade AI Model",
+        "description": "Adversaries can [Craft Adversarial Data](/techniques/AML.T0043) that prevents an AI model from correctly identifying the contents of the data or [Generate Deepfakes](/techniques/AML.T0088) that fools an AI model expecting authentic data.\n\nThis technique can be used to evade a downstream task where AI is utilized. The adversary may evade AI-based virus/malware detection or network scanning towards the goal of a traditional cyber attack. AI model evasion through deepfake generation may also provide initial access to systems that use AI-based biometric authentication.",
+        "tactic": "Impact",
+        "maturity": "Realized",
+        "mitigations": [
+          {
+            "cat": "Technical - ML",
+            "desc": "Use techniques to make AI models robust to adversarial inputs such as adversarial training or network distillation.",
+            "id": "AML.M0003",
+            "name": "Model Hardening"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Use an ensemble of models for inference to increase robustness to adversarial inputs. Some attacks may effectively evade one model or model family but be ineffective against others.",
+            "id": "AML.M0006",
+            "name": "Use Ensemble Methods"
+          },
+          {
+            "cat": "Technical - Cyber",
+            "desc": "Incorporate multiple sensors to integrate varying perspectives and modalities to avoid a single point of failure susceptible to physical attacks.",
+            "id": "AML.M0009",
+            "name": "Use Multi-Modal Sensors"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Preprocess all inference data to nullify or reverse potential adversarial perturbations.",
+            "id": "AML.M0010",
+            "name": "Input Restoration"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Detect and block adversarial inputs or atypical queries that deviate from known benign behavior, exhibit behavior patterns observed in previous attacks or that come from potentially malicious IPs.\nIncorporate adversarial detection algorithms into the AI system prior to the AI model.",
+            "id": "AML.M0015",
+            "name": "Adversarial Input Detection"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Apply deepfake detection algorithms against any untrusted or user-provided data, especially in impactful applications such as biometric verification, to block generated content.\n\nDetectors may use a combination of approaches, including:\n-\tAI models trained to differentiate between real and deepfake content.\n-\tIdentifying common inconsistencies in deepfake content, such as unnatural facial movements, audio mismatches, or pixel-level artifacts.\n-\tBiometrics analysis, such blinking, eye movements, and microexpressions.",
+            "id": "AML.M0034",
+            "name": "Deepfake Detection"
+          }
+        ],
+        "subtechniques": []
+      },
+      {
+        "technique_id": "AML.T0078",
+        "technique": "Drive-by Compromise",
+        "description": "Adversaries may gain access to an AI system through a user visiting a website over the normal course of browsing, or an AI agent retrieving information from the web on behalf of a user. Websites can contain an [LLM Prompt Injection](/techniques/AML.T0051) which, when executed, can change the behavior of the AI model.\n\nThe same approach may be used to deliver other types of malicious code that don't target AI directly (See [Drive-by Compromise in ATT&CK](https://attack.mitre.org/techniques/T1189/)).",
+        "tactic": "Initial Access",
+        "maturity": "Demonstrated",
+        "mitigations": [
+          {
+            "cat": null,
+            "desc": null,
+            "id": null,
+            "name": null
+          }
+        ],
+        "subtechniques": []
+      },
+      {
+        "technique_id": "AML.T0015",
+        "technique": "Evade AI Model",
+        "description": "Adversaries can [Craft Adversarial Data](/techniques/AML.T0043) that prevents an AI model from correctly identifying the contents of the data or [Generate Deepfakes](/techniques/AML.T0088) that fools an AI model expecting authentic data.\n\nThis technique can be used to evade a downstream task where AI is utilized. The adversary may evade AI-based virus/malware detection or network scanning towards the goal of a traditional cyber attack. AI model evasion through deepfake generation may also provide initial access to systems that use AI-based biometric authentication.",
+        "tactic": "Initial Access",
+        "maturity": "Realized",
+        "mitigations": [
+          {
+            "cat": "Technical - ML",
+            "desc": "Use techniques to make AI models robust to adversarial inputs such as adversarial training or network distillation.",
+            "id": "AML.M0003",
+            "name": "Model Hardening"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Use an ensemble of models for inference to increase robustness to adversarial inputs. Some attacks may effectively evade one model or model family but be ineffective against others.",
+            "id": "AML.M0006",
+            "name": "Use Ensemble Methods"
+          },
+          {
+            "cat": "Technical - Cyber",
+            "desc": "Incorporate multiple sensors to integrate varying perspectives and modalities to avoid a single point of failure susceptible to physical attacks.",
+            "id": "AML.M0009",
+            "name": "Use Multi-Modal Sensors"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Preprocess all inference data to nullify or reverse potential adversarial perturbations.",
+            "id": "AML.M0010",
+            "name": "Input Restoration"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Detect and block adversarial inputs or atypical queries that deviate from known benign behavior, exhibit behavior patterns observed in previous attacks or that come from potentially malicious IPs.\nIncorporate adversarial detection algorithms into the AI system prior to the AI model.",
+            "id": "AML.M0015",
+            "name": "Adversarial Input Detection"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Apply deepfake detection algorithms against any untrusted or user-provided data, especially in impactful applications such as biometric verification, to block generated content.\n\nDetectors may use a combination of approaches, including:\n-\tAI models trained to differentiate between real and deepfake content.\n-\tIdentifying common inconsistencies in deepfake content, such as unnatural facial movements, audio mismatches, or pixel-level artifacts.\n-\tBiometrics analysis, such blinking, eye movements, and microexpressions.",
+            "id": "AML.M0034",
+            "name": "Deepfake Detection"
+          }
+        ],
+        "subtechniques": []
+      },
+      {
+        "technique_id": "AML.T0010",
+        "technique": "AI Supply Chain Compromise",
+        "description": "Adversaries may gain initial access to a system by compromising the unique portions of the AI supply chain.\nThis could include [Hardware](/techniques/AML.T0010.000), [Data](/techniques/AML.T0010.002) and its annotations, parts of the AI [AI Software](/techniques/AML.T0010.001) stack, or the [Model](/techniques/AML.T0010.003) itself.\nIn some instances the attacker will need secondary access to fully carry out an attack using compromised components of the supply chain.",
+        "tactic": "Initial Access",
+        "maturity": "Realized",
+        "mitigations": [
+          {
+            "cat": "Technical - Cyber",
+            "desc": "Verify the cryptographic checksum of all AI artifacts to verify that the file was not modified by an attacker.",
+            "id": "AML.M0014",
+            "name": "Verify AI Artifacts"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Guardrails are safety controls that are placed between a generative AI model and the output shared with the user to prevent undesired inputs and outputs.\nGuardrails can take the form of validators such as filters, rule-based logic, or regular expressions, as well as AI-based approaches, such as classifiers and utilizing LLMs, or named entity recognition (NER) to evaluate the safety of the prompt or response. Domain specific methods can be employed to reduce risks in a variety of areas such as etiquette, brand damage, jailbreaking, false information, code exploits, SQL injections, and data leakage.",
+            "id": "AML.M0020",
+            "name": "Generative AI Guardrails"
+          },
+          {
+            "cat": "Policy",
+            "desc": "An AI Bill of Materials (AI BOM) contains a full listing of artifacts and resources that were used in building the AI. The AI BOM can help mitigate supply chain risks and enable rapid response to reported vulnerabilities.\n\nThis can include maintaining dataset provenance, i.e. a detailed history of datasets used for AI applications. The history can include information about the dataset source as well as well as a complete record of any modifications.",
+            "id": "AML.M0023",
+            "name": "AI Bill of Materials"
+          }
+        ],
+        "subtechniques": [
+          "Hardware",
+          "AI Software",
+          "Data",
+          "Model",
+          "Container Registry",
+          "AI Agent Tool"
+        ]
+      },
+      {
+        "technique_id": "AML.T0020",
+        "technique": "Poison Training Data",
+        "description": "Adversaries may attempt to poison datasets used by an AI model by modifying the underlying data or its labels.\nThis allows the adversary to embed vulnerabilities in AI models trained on the data that may not be easily detectable.\nData poisoning attacks may or may not require modifying the labels.\nThe embedded vulnerability is activated at a later time by data samples with an [Insert Backdoor Trigger](/techniques/AML.T0043.004)\n\nPoisoned data can be introduced via [AI Supply Chain Compromise](/techniques/AML.T0010) or the data may be poisoned after the adversary gains [Initial Access](/tactics/AML.TA0004) to the system.",
+        "tactic": "Persistence",
+        "maturity": "Realized",
+        "mitigations": [
+          {
+            "cat": "Policy",
+            "desc": "Limit public release of technical project details including data, algorithms, model architectures, and model checkpoints that are used in production, or that are representative of those used in production.",
+            "id": "AML.M0001",
+            "name": "Limit Model Artifact Release"
+          },
+          {
+            "cat": "Policy",
+            "desc": "Establish access controls on internal model registries and limit internal access to production models. Limit access to training data only to approved users.",
+            "id": "AML.M0005",
+            "name": "Control Access to AI Models and Data at Rest"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Detect and remove or remediate poisoned training data.  Training data should be sanitized prior to model training and recurrently for an active learning model.\n\nImplement a filter to limit ingested training data.  Establish a content policy that would remove unwanted content such as certain explicit or offensive language from being used.",
+            "id": "AML.M0007",
+            "name": "Sanitize Training Data"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Validate that AI models perform as intended by testing for backdoor triggers, potential for data leakage, or adversarial influence.\nMonitor AI model for concept drift and training data drift, which may indicate data tampering and poisoning.",
+            "id": "AML.M0008",
+            "name": "Validate AI Model"
+          },
+          {
+            "cat": "Policy",
+            "desc": "An AI Bill of Materials (AI BOM) contains a full listing of artifacts and resources that were used in building the AI. The AI BOM can help mitigate supply chain risks and enable rapid response to reported vulnerabilities.\n\nThis can include maintaining dataset provenance, i.e. a detailed history of datasets used for AI applications. The history can include information about the dataset source as well as well as a complete record of any modifications.",
+            "id": "AML.M0023",
+            "name": "AI Bill of Materials"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Maintain a detailed history of datasets used for AI applications. The history should include information about the dataset's source as well as a complete record of any modifications.",
+            "id": "AML.M0025",
+            "name": "Maintain AI Dataset Provenance"
+          }
+        ],
+        "subtechniques": []
+      },
+      {
+        "technique_id": "AML.T0099",
+        "technique": "AI Agent Tool Data Poisoning",
+        "description": "Adversaries may place malicious content on a victim's system where it can be retrieved by an AI Agent Tool. This may be accomplished by placing documents in a location that will be ingested by a service the AI agent has associated tools for.\n\nThe content may be targeted such that it would often be retrieved by common queries. The adversary's content may include false or misleading information. It may also include prompt injections with malicious instructions.",
+        "tactic": "Persistence",
+        "maturity": "Feasible",
+        "mitigations": [
+          {
+            "cat": null,
+            "desc": null,
+            "id": null,
+            "name": null
+          }
+        ],
+        "subtechniques": []
+      },
+      {
+        "technique_id": "AML.T0070",
+        "technique": "RAG Poisoning",
+        "description": "Adversaries may inject malicious content into data indexed by a retrieval augmented generation (RAG) system to contaminate a future thread through RAG-based search results. This may be accomplished by placing manipulated documents in a location the RAG indexes (see [Gather RAG-Indexed Targets](/techniques/AML.T0064)).\n\nThe content may be targeted such that it would always surface as a search result for a specific user query. The adversary's content may include false or misleading information. It may also include prompt injections with malicious instructions, or false RAG entries.",
+        "tactic": "Persistence",
+        "maturity": "Demonstrated",
+        "mitigations": [
+          {
+            "cat": null,
+            "desc": null,
+            "id": null,
+            "name": null
+          }
+        ],
+        "subtechniques": []
+      },
+      {
+        "technique_id": "AML.T0061",
+        "technique": "LLM Prompt Self-Replication",
+        "description": "An adversary may use a carefully crafted [LLM Prompt Injection](/techniques/AML.T0051) designed to cause the LLM to replicate the prompt as part of its output. This allows the prompt to propagate to other LLMs and persist on the system. The self-replicating prompt is typically paired with other malicious instructions (ex: [LLM Jailbreak](/techniques/AML.T0054), [LLM Data Leakage](/techniques/AML.T0057)).",
+        "tactic": "Persistence",
+        "maturity": "Demonstrated",
+        "mitigations": [
+          {
+            "cat": "Technical - ML",
+            "desc": "Guardrails are safety controls that are placed between a generative AI model and the output shared with the user to prevent undesired inputs and outputs.\nGuardrails can take the form of validators such as filters, rule-based logic, or regular expressions, as well as AI-based approaches, such as classifiers and utilizing LLMs, or named entity recognition (NER) to evaluate the safety of the prompt or response. Domain specific methods can be employed to reduce risks in a variety of areas such as etiquette, brand damage, jailbreaking, false information, code exploits, SQL injections, and data leakage.",
+            "id": "AML.M0020",
+            "name": "Generative AI Guardrails"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "Guidelines are safety controls that are placed between user-provided input and a generative AI model to help direct the model to produce desired outputs and prevent undesired outputs.\n\nGuidelines can be implemented as instructions appended to all user prompts or as part of the instructions in the system prompt. They can define the goal(s), role, and voice of the system, as well as outline safety and security parameters.",
+            "id": "AML.M0021",
+            "name": "Generative AI Guidelines"
+          },
+          {
+            "cat": "Technical - ML",
+            "desc": "When training or fine-tuning a generative AI model it is important to utilize techniques that improve model alignment with safety, security, and content policies.\n\nThe fine-tuning process can potentially remove built-in safety mechanisms in a generative AI model, but utilizing techniques such as Supervised Fine-Tuning, Reinforcement Learning from Human Feedback or AI Feedback, and Targeted Safety Context Distillation can improve the safety and alignment of the model.",
+            "id": "AML.M0022",
+            "name": "Generative AI Model Alignment"
+          }
+        ],
+        "subtechniques": []
+      }
+    ],
+    "mitigations": [
+      {
+        "cat": "Technical - ML",
+        "desc": "Decreasing the fidelity of model outputs provided to the end user can reduce an adversary's ability to extract information about the model and optimize attacks for the model.",
+        "id": "AML.M0002",
+        "name": "Passive AI Output Obfuscation"
+      },
+      {
+        "cat": "Technical - ML",
+        "desc": "Use techniques to make AI models robust to adversarial inputs such as adversarial training or network distillation.",
+        "id": "AML.M0003",
+        "name": "Model Hardening"
+      },
+      {
+        "cat": "Technical - Cyber",
+        "desc": "Limit the total number and rate of queries a user can perform.",
+        "id": "AML.M0004",
+        "name": "Restrict Number of AI Model Queries"
+      },
+      {
+        "cat": "Technical - ML",
+        "desc": "Use an ensemble of models for inference to increase robustness to adversarial inputs. Some attacks may effectively evade one model or model family but be ineffective against others.",
+        "id": "AML.M0006",
+        "name": "Use Ensemble Methods"
+      },
+      {
+        "cat": "Technical - ML",
+        "desc": "Validate that AI models perform as intended by testing for backdoor triggers, potential for data leakage, or adversarial influence.\nMonitor AI model for concept drift and training data drift, which may indicate data tampering and poisoning.",
+        "id": "AML.M0008",
+        "name": "Validate AI Model"
+      },
+      {
+        "cat": "Technical - ML",
+        "desc": "Preprocess all inference data to nullify or reverse potential adversarial perturbations.",
+        "id": "AML.M0010",
+        "name": "Input Restoration"
+      },
+      {
+        "cat": "Technical - ML",
+        "desc": "Detect and block adversarial inputs or atypical queries that deviate from known benign behavior, exhibit behavior patterns observed in previous attacks or that come from potentially malicious IPs.\nIncorporate adversarial detection algorithms into the AI system prior to the AI model.",
+        "id": "AML.M0015",
+        "name": "Adversarial Input Detection"
+      },
+      {
+        "cat": "Policy",
+        "desc": "Require users to verify their identities before accessing a production model.\nRequire authentication for API endpoints and monitor production model queries to ensure compliance with usage policies and to prevent model misuse.",
+        "id": "AML.M0019",
+        "name": "Control Access to AI Models and Data in Production"
+      },
+      {
+        "cat": "Technical - Cyber",
+        "desc": "Implement logging of inputs and outputs of deployed AI models. When deploying AI agents, implement logging of the intermediate steps of agentic actions and decisions, data access and tool use, installation commands, and identity of the agent. Monitoring logs can help to detect security threats and mitigate impacts.\n\nAdditionally, having logging enabled can discourage adversaries who want to remain undetected from utilizing AI resources.",
+        "id": "AML.M0024",
+        "name": "AI Telemetry Logging"
+      },
+      {
+        "cat": "Technical - ML",
+        "desc": "Guardrails are safety controls that are placed between a generative AI model and the output shared with the user to prevent undesired inputs and outputs.\nGuardrails can take the form of validators such as filters, rule-based logic, or regular expressions, as well as AI-based approaches, such as classifiers and utilizing LLMs, or named entity recognition (NER) to evaluate the safety of the prompt or response. Domain specific methods can be employed to reduce risks in a variety of areas such as etiquette, brand damage, jailbreaking, false information, code exploits, SQL injections, and data leakage.",
+        "id": "AML.M0020",
+        "name": "Generative AI Guardrails"
+      },
+      {
+        "cat": "Technical - ML",
+        "desc": "Guidelines are safety controls that are placed between user-provided input and a generative AI model to help direct the model to produce desired outputs and prevent undesired outputs.\n\nGuidelines can be implemented as instructions appended to all user prompts or as part of the instructions in the system prompt. They can define the goal(s), role, and voice of the system, as well as outline safety and security parameters.",
+        "id": "AML.M0021",
+        "name": "Generative AI Guidelines"
+      },
+      {
+        "cat": "Technical - ML",
+        "desc": "When training or fine-tuning a generative AI model it is important to utilize techniques that improve model alignment with safety, security, and content policies.\n\nThe fine-tuning process can potentially remove built-in safety mechanisms in a generative AI model, but utilizing techniques such as Supervised Fine-Tuning, Reinforcement Learning from Human Feedback or AI Feedback, and Targeted Safety Context Distillation can improve the safety and alignment of the model.",
+        "id": "AML.M0022",
+        "name": "Generative AI Model Alignment"
+      },
+      {
+        "cat": "Technical - Cyber",
+        "desc": "Incorporate multiple sensors to integrate varying perspectives and modalities to avoid a single point of failure susceptible to physical attacks.",
+        "id": "AML.M0009",
+        "name": "Use Multi-Modal Sensors"
+      },
+      {
+        "cat": "Technical - ML",
+        "desc": "Apply deepfake detection algorithms against any untrusted or user-provided data, especially in impactful applications such as biometric verification, to block generated content.\n\nDetectors may use a combination of approaches, including:\n-\tAI models trained to differentiate between real and deepfake content.\n-\tIdentifying common inconsistencies in deepfake content, such as unnatural facial movements, audio mismatches, or pixel-level artifacts.\n-\tBiometrics analysis, such blinking, eye movements, and microexpressions.",
+        "id": "AML.M0034",
+        "name": "Deepfake Detection"
+      },
+      {
+        "cat": "Technical - Cyber",
+        "desc": "Prevent abuse of library loading mechanisms in the operating system and software to load untrusted code by configuring appropriate library loading mechanisms and investigating potential vulnerable software.\n\nFile formats such as pickle files that are commonly used to store AI models can contain exploits that allow for loading of malicious libraries.",
+        "id": "AML.M0011",
+        "name": "Restrict Library Loading"
+      },
+      {
+        "cat": "Technical - Cyber",
+        "desc": "Verify the cryptographic checksum of all AI artifacts to verify that the file was not modified by an attacker.",
+        "id": "AML.M0014",
+        "name": "Verify AI Artifacts"
+      },
+      {
+        "cat": "Technical - Cyber",
+        "desc": "Vulnerability scanning is used to find potentially exploitable software vulnerabilities to remediate them.\n\nFile formats such as pickle files that are commonly used to store AI models can contain exploits that allow for arbitrary code execution.\nThese files should be scanned for potentially unsafe calls, which could be used to execute code, create new processes, or establish networking capabilities.\nAdversaries may embed malicious code in model corrupt model files, so scanners should be capable of working with models that cannot be fully de-serialized.\nModel artifacts, downstream products produced by models, and external software dependencies should be scanned for known vulnerabilities.",
+        "id": "AML.M0016",
+        "name": "Vulnerability Scanning"
+      },
+      {
+        "cat": "Policy",
+        "desc": "Educate AI model developers to on AI supply chain risks and potentially malicious AI artifacts.\nEducate users on how to identify deepfakes and phishing attempts.",
+        "id": "AML.M0018",
+        "name": "User Training"
+      },
+      {
+        "cat": "Policy",
+        "desc": "An AI Bill of Materials (AI BOM) contains a full listing of artifacts and resources that were used in building the AI. The AI BOM can help mitigate supply chain risks and enable rapid response to reported vulnerabilities.\n\nThis can include maintaining dataset provenance, i.e. a detailed history of datasets used for AI applications. The history can include information about the dataset source as well as well as a complete record of any modifications.",
+        "id": "AML.M0023",
+        "name": "AI Bill of Materials"
+      },
+      {
+        "cat": "Technical - ML",
+        "desc": "Implement validation on inputs and outputs for the tools and data sources used by AI agents. Validation includes enforcing a common data format, schema validation, checks for sensitive or prohibited information leakage, and data sanitization to remove potential injections or unsafe code. Input and output validation can help prevent compromises from spreading in AI-enabled systems and can help secure the workflow when multiple components are chained together. Validation should be performed external to the AI agent.",
+        "id": "AML.M0033",
+        "name": "Input and Output Validation for AI Agent Components"
+      },
+      {
+        "cat": "Technical - Cyber",
+        "desc": "AI agents may be granted elevated privileges above that of a normal user to enable desired workflows. When deploying a privileged AI agent, or an agent that interacts with multiple users, it is important to implement robust policies and controls on permissions of the privileged agent. These controls include Role-Based Access Controls (RBAC), Attribute-Based Access Controls (ABAC), and the principle of least privilege so that the agent is only granted the necessary permissions to access tools and resources required to accomplish its designated task(s).",
+        "id": "AML.M0026",
+        "name": "Privileged AI Agent Permissions Configuration"
+      },
+      {
+        "cat": "Technical - Cyber",
+        "desc": "When deploying an AI agent that acts as a representative of a user and performs actions on their behalf, it is important to implement robust policies and controls on permissions and lifecycle management of the agent. Lifecycle management involves establishing identity, protocols for access management, and decommissioning of the agent when its role is no longer needed. Controls should also include the principle of least privilege and delegated access from the user account. When acting as a representative of a user, the AI agent should not be granted permissions that the user would not be granted within the system or organization.",
+        "id": "AML.M0027",
+        "name": "Single-User AI Agent Permissions Configuration"
+      },
+      {
+        "cat": "Technical - Cyber",
+        "desc": "When deploying tools that will be shared across multiple AI agents, it is important to implement robust policies and controls on permissions for the tools. These controls include applying the principle of least privilege along with delegated access, where the tools receive the permissions, identities, and restrictions of the AI agent calling them. These configurations may be implemented either in MCP servers which connect the agents to the tools calling them or, in more complex cases, directly in the configuration files of the tool.",
+        "id": "AML.M0028",
+        "name": "AI Agent Tools Permissions Configuration"
+      },
+      {
+        "cat": "Technical - ML",
+        "desc": "Systems should require the user or another human stakeholder to approve AI agent actions before the agent takes them. The human approver may be technical staff or business unit SMEs depending on the use case. Separate tools, such as dedicated audit agents, may assist human approval, but final adjudication should be conducted by a human decision-maker. \n\nThe security benefits from Human In-the-Loop policies may be at odds with operational overhead costs of additional approvals. To ease this, Human In-the-Loop policies should follow the degree of consequence of the task at hand. Minor, repetitive tasks performed by agents accessing basic tools may only require minimal human oversight, while agents employed in systems with significant consequences may necessitate approval from multiple stakeholders diversified across multiple organizations.",
+        "id": "AML.M0029",
+        "name": "Human In-the-Loop for AI Agent Actions"
+      },
+      {
+        "cat": "Technical - ML",
+        "desc": "Untrusted data can contain prompt injections that invoke an AI agent's tools, potentially causing confidentiality, integrity or availability violations. It is recommended that tool invocation be restricted or limited when untrusted data enters the LLM's context.\n\nThe degree to which tool invocation is restricted may depend on the potential consequences of the action. Consider blocking the automatic invocation of tools or requiring user confirmation once untrusted data enters the LLM's context. For high consequence actions, consider always requiring user confirmation.",
+        "id": "AML.M0030",
+        "name": "Restrict AI Agent Tool Invocation on Untrusted Data"
+      },
+      {
+        "cat": "Technical - Cyber",
+        "desc": "Define security boundaries around agentic tools and data sources with methods such as API access, container isolation, code execution sandboxing, and rate limiting of tool invocation. When sandboxing, limit resource and network access and build the container or virtual machine from a clean base image before each run. This restricts untrusted processes or potential compromises from spreading throughout the system.",
+        "id": "AML.M0032",
+        "name": "Segmentation of AI Agent Components"
+      },
+      {
+        "cat": "Policy",
+        "desc": "Limit public release of technical project details including data, algorithms, model architectures, and model checkpoints that are used in production, or that are representative of those used in production.",
+        "id": "AML.M0001",
+        "name": "Limit Model Artifact Release"
+      },
+      {
+        "cat": "Policy",
+        "desc": "Establish access controls on internal model registries and limit internal access to production models. Limit access to training data only to approved users.",
+        "id": "AML.M0005",
+        "name": "Control Access to AI Models and Data at Rest"
+      },
+      {
+        "cat": "Technical - ML",
+        "desc": "Detect and remove or remediate poisoned training data.  Training data should be sanitized prior to model training and recurrently for an active learning model.\n\nImplement a filter to limit ingested training data.  Establish a content policy that would remove unwanted content such as certain explicit or offensive language from being used.",
+        "id": "AML.M0007",
+        "name": "Sanitize Training Data"
+      },
+      {
+        "cat": "Technical - ML",
+        "desc": "Maintain a detailed history of datasets used for AI applications. The history should include information about the dataset's source as well as a complete record of any modifications.",
+        "id": "AML.M0025",
+        "name": "Maintain AI Dataset Provenance"
+      }
+    ],
+    "case_studies": [
+      {
+        "case_id": "AML.CS0055",
+        "case_name": "AI ClickFix: Hijacking Computer-Use Agents Using ClickFix",
+        "summary": "",
+        "technique_used": "Drive-by Compromise",
+        "procedure": "The victim's Claude Computer-Use Agent visited the researcher's website, pulling the contents into its context."
+      },
+      {
+        "case_id": "AML.CS0028",
+        "case_name": "AI Model Tampering via Supply Chain Attack",
+        "summary": "",
+        "technique_used": "Evade AI Model",
+        "procedure": "Once the adversary's container image is deployed, the model may misclassify inputs due to the adversary's manipulations."
+      },
+      {
+        "case_id": "AML.CS0018",
+        "case_name": "Arbitrary Code Execution with Google Colab",
+        "summary": "",
+        "technique_used": "User Execution",
+        "procedure": "A victim user may unwittingly execute malicious code provided as part of a compromised Colab notebook.  Malicious code can be obfuscated or hidden in other files that the notebook downloads."
+      },
+      {
+        "case_id": "AML.CS0005",
+        "case_name": "Attack on Machine Translation Services",
+        "summary": "",
+        "technique_used": "Evade AI Model",
+        "procedure": "The adversarial examples were used to evade the machine translation services by a variety of means. This included targeted word flips, vulgar outputs, and dropped sentences."
+      },
+      {
+        "case_id": "AML.CS0005",
+        "case_name": "Attack on Machine Translation Services",
+        "summary": "",
+        "technique_used": "AI Model Inference API Access",
+        "procedure": "They abused a public facing application to query the model and produced machine translated sentence pairs as training data."
+      },
+      {
+        "case_id": "AML.CS0032",
+        "case_name": "Attempted Evasion of ML Phishing Webpage Detection System",
+        "summary": "",
+        "technique_used": "Evade AI Model",
+        "procedure": "The visual similarity model used to detect brand impersonation was evaded. However, other components of the phishing detection system successfully identified the phishing websites."
+      },
+      {
+        "case_id": "AML.CS0013",
+        "case_name": "Backdoor Attack on Deep Learning Models in Mobile Apps",
+        "summary": "",
+        "technique_used": "Evade AI Model",
+        "procedure": "Presenting the visual trigger causes the victim model to be bypassed.\nThe researchers demonstrated this can be used to evade ML models in\nseveral safety-critical apps in the Google Play store."
+      },
+      {
+        "case_id": "AML.CS0001",
+        "case_name": "Botnet Domain Generation Algorithm (DGA) Detection Evasion",
+        "summary": "",
+        "technique_used": "Evade AI Model",
+        "procedure": "The DGA generated domain names mutated with this technique successfully evade the target DGA Detection model, allowing an adversary to continue communication with their [Command and Control](https://attack.mitre.org/tactics/TA0011/) servers."
+      }
+    ],
+    "attack_sequences": [
+      {
+        "from_technique": "Acquire Public AI Artifacts",
+        "to_technique": "AI Model Inference API Access"
+      },
+      {
+        "from_technique": "AI Supply Chain Compromise",
+        "to_technique": "Unsafe AI Artifacts"
+      },
+      {
+        "from_technique": "User Execution",
+        "to_technique": "AI Artifact Collection"
+      },
+      {
+        "from_technique": "User Execution",
+        "to_technique": "Generate Malicious Commands"
+      },
+      {
+        "from_technique": "Valid Accounts",
+        "to_technique": "User Execution"
+      },
+      {
+        "from_technique": "Valid Accounts",
+        "to_technique": "AI Model Inference API Access"
+      },
+      {
+        "from_technique": "Evade AI Model",
+        "to_technique": "Erode AI Model Integrity"
+      },
+      {
+        "from_technique": "Evade AI Model",
+        "to_technique": "Phishing"
+      },
+      {
+        "from_technique": "Evade AI Model",
+        "to_technique": "Impersonation"
+      },
+      {
+        "from_technique": "Evade AI Model",
+        "to_technique": "Virtualization/Sandbox Evasion"
+      }
+    ]
+  },
+  "assessment": "## THREAT ASSESSMENT REPORT\n\n### 1. System Summary\nThe system under assessment is a RAG-based customer support chatbot using GPT-4, a Pinecone vector database, and a public REST API endpoint. The key attack surfaces identified are the LLM backbone, retrieval layer, vector database, API gateway, user-facing interface, fine-tuning data, and training pipeline. These components are vulnerable to various attacks, including adversarial data crafting, model evasion, and data poisoning.\n\n### 2. Identified Threats\n- **[AML.T0043] Craft Adversarial Data** (Tactic: AI Attack Staging)\n  - Applies to the system's LLM backbone and retrieval layer, as they can be manipulated by adversarial data.\n  - Likelihood: High — The system's reliance on user input and lack of robust validation mechanisms make it susceptible to adversarial data attacks.\n- **[AML.T0040] AI Model Inference API Access** (Tactic: AI Model Access)\n  - Applies to the system's API gateway, as it provides access to the AI model.\n  - Likelihood: Medium — The API gateway's security controls and access restrictions will determine the likelihood of this attack.\n- **[AML.T0051] LLM Prompt Injection** (Tactic: Execution)\n  - Applies to the system's LLM backbone, as it can be manipulated by malicious prompts.\n  - Likelihood: High — The system's lack of robust input validation and sanitization mechanisms make it susceptible to prompt injection attacks.\n- **[AML.T0070] RAG Poisoning** (Tactic: Persistence)\n  - Applies to the system's retrieval layer, as it can be manipulated by malicious data.\n  - Likelihood: Medium — The system's data ingestion and validation mechanisms will determine the likelihood of this attack.\n- **[AML.T0015] Evade AI Model** (Tactic: Defense Evasion)\n  - Applies to the system's LLM backbone and retrieval layer, as they can be evaded by adversarial data or malicious inputs.\n  - Likelihood: High — The system's lack of robust validation and sanitization mechanisms make it susceptible to evasion attacks.\n\n### 3. Applicable Mitigations\n- **[AML.M0015] Adversarial Input Detection**\n  - Addresses techniques: [AML.T0043] Craft Adversarial Data, [AML.T0051] LLM Prompt Injection\n  - Owner: ML Engineer\n- **[AML.M0019] Control Access to AI Models and Data in Production**\n  - Addresses techniques: [AML.T0040] AI Model Inference API Access, [AML.T0051] LLM Prompt Injection\n  - Owner: Security Operations\n- **[AML.M0020] Generative AI Guardrails**\n  - Addresses techniques: [AML.T0051] LLM Prompt Injection, [AML.T0070] RAG Poisoning\n  - Owner: ML Engineer\n- **[AML.M0024] AI Telemetry Logging**\n  - Addresses techniques: [AML.T0040] AI Model Inference API Access, [AML.T0051] LLM Prompt Injection\n  - Owner: Security Operations\n\n### 4. Real-World Precedents\n- **[AML.CS0055] AI ClickFix: Hijacking Computer-Use Agents Using ClickFix** — A drive-by compromise attack was used to hijack computer-use agents.\n- **[AML.CS0028] AI Model Tampering via Supply Chain Attack** — An AI model was tampered with through a supply chain attack, demonstrating the risk of evasion attacks.\n- **[AML.CS0018] Arbitrary Code Execution with Google Colab** — A user execution attack was used to execute arbitrary code on Google Colab.\n\n### 5. Attack Sequences\n- **Acquire Public AI Artifacts → AI Model Inference API Access**: An attacker can acquire public AI artifacts and use them to access the AI model through the API gateway.\n- **Evade AI Model → Erode AI Model Integrity**: An attacker can evade the AI model's defenses and erode its integrity by crafting adversarial data or malicious inputs.\n\n### 6. Risk Table\n| Technique ID | Technique | Tactic | Likelihood | Mitigations |\n| --- | --- | --- | --- | --- |\n| AML.T0043 | Craft Adversarial Data | AI Attack Staging | High | AML.M0015 |\n| AML.T0040 | AI Model Inference API Access | AI Model Access | Medium | AML.M0019, AML.M0024 |\n| AML.T0051 | LLM Prompt Injection | Execution | High | AML.M0015, AML.M0019, AML.M0020 |\n| AML.T0070 | RAG Poisoning | Persistence | Medium | AML.M0020 |\n| AML.T0015 | Evade AI Model | Defense Evasion | High | AML.M0015, AML.M0020 |\n\n### 7. Coverage Gaps\n- The system's fine-tuning data and training pipeline do not have matching techniques or mitigations in the subgraph, indicating a blind spot in current ATLAS coverage.\n- The system's user-facing interface does not have matching techniques or mitigations in the subgraph, indicating a blind spot in current ATLAS coverage."
+}

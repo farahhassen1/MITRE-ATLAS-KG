@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="ATLAS Reasoning Engine — AI threat modelling powered by MITRE ATLAS knowledge graph and GraphRAG." />
+  <title>ATLAS Reasoning Engine — Voyverse</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+  <!-- ── BACKGROUND CANVAS ─────────────────────────────────────────────── -->
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- ── TOPBAR ─────────────────────────────────────────────────────────── -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5"/>
+            <line x1="12" y1="2" x2="12" y2="22"/>
+            <line x1="2" y1="8.5" x2="22" y2="8.5"/>
+            <line x1="2" y1="15.5" x2="22" y2="15.5"/>
+          </svg>
+        </div>
+        <div>
+          <span class="brand-name">ATLAS</span>
+          <span class="brand-tag">Reasoning Engine</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="health-bar" id="health-bar">
+          <div class="health-dot loading" id="neo4j-dot"></div>
+          <span class="health-label" id="neo4j-label">Neo4j</span>
+          <div class="health-sep"></div>
+          <div class="health-dot loading" id="api-dot"></div>
+          <span class="health-label" id="api-label">LLM API</span>
+        </div>
+        <a href="https://atlas.mitre.org" target="_blank" class="topbar-link">
+          MITRE ATLAS ↗
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── MAIN ───────────────────────────────────────────────────────────── -->
+  <main class="main">
+
+    <!-- ── HERO ─────────────────────────────────────────────────────────── -->
+    <section class="hero" id="section-hero">
+      <div class="hero-eyebrow">
+        <span class="eyebrow-badge">GraphRAG · MITRE ATLAS · Step 3</span>
+      </div>
+      <h1 class="hero-title">
+        AI Threat <span class="gradient-text">Assessment</span><br/>Engine
+      </h1>
+      <p class="hero-subtitle">
+        Describe your AI system. The engine decomposes it, queries the MITRE ATLAS knowledge graph,
+        and generates a traceable, citation-grounded threat assessment.
+      </p>
+
+      <!-- INPUT CARD -->
+      <div class="input-card">
+        <div class="input-card-header">
+          <span class="input-card-title">System Description</span>
+          <button class="btn-ghost" id="btn-demo" title="Load demo system">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            Load Demo
+          </button>
+        </div>
+        <textarea
+          id="system-input"
+          class="system-textarea"
+          placeholder="Describe your AI system architecture… e.g. 'A RAG-based customer support chatbot with an LLM backbone fine-tuned on internal documentation, a vector database, a public REST API, and an agent layer that can call external tools…'"
+          rows="6"
+        ></textarea>
+        <div class="input-card-footer">
+          <span class="char-counter" id="char-counter">0 characters</span>
+          <button class="btn-primary" id="btn-analyze" disabled>
+            <span class="btn-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              </svg>
+            </span>
+            <span class="btn-label">Analyze Threats</span>
+            <span class="btn-spinner hidden" id="btn-spinner"></span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── PIPELINE PROGRESS ─────────────────────────────────────────────── -->
+    <section class="pipeline-section hidden" id="section-pipeline">
+      <div class="section-label">GraphRAG Pipeline</div>
+      <div class="pipeline-stages">
+
+        <!-- Stage 1 -->
+        <div class="stage-card" id="stage-1" data-state="idle">
+          <div class="stage-header">
+            <div class="stage-num">1</div>
+            <div class="stage-info">
+              <div class="stage-title">G-Retrieval · Query Enhancement</div>
+              <div class="stage-subtitle">§6.4.1 · arXiv:2408.08921</div>
+            </div>
+            <div class="stage-status-icon" id="stage-1-icon">
+              <div class="spinner"></div>
+            </div>
+          </div>
+          <div class="stage-body hidden" id="stage-1-body">
+            <div class="stage-row">
+              <span class="stage-row-label">Components</span>
+              <div class="chip-list" id="components-chips"></div>
+            </div>
+            <div class="stage-row" style="margin-top:12px">
+              <span class="stage-row-label">Search Terms</span>
+              <div class="chip-list" id="terms-chips"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pipeline-connector">
+          <div class="connector-line"></div>
+          <div class="connector-arrow">↓</div>
+        </div>
+
+        <!-- Stage 2 -->
+        <div class="stage-card" id="stage-2" data-state="idle">
+          <div class="stage-header">
+            <div class="stage-num">2</div>
+            <div class="stage-info">
+              <div class="stage-title">G-Retrieval · Subgraph Extraction</div>
+              <div class="stage-subtitle">§6.3 · Cypher queries against ATLAS Neo4j graph</div>
+            </div>
+            <div class="stage-status-icon" id="stage-2-icon">
+              <div class="spinner"></div>
+            </div>
+          </div>
+          <div class="stage-body hidden" id="stage-2-body">
+            <div class="subgraph-stats" id="subgraph-stats">
+              <div class="sg-stat">
+                <div class="sg-num" id="sg-techniques">—</div>
+                <div class="sg-label">Techniques</div>
+              </div>
+              <div class="sg-stat">
+                <div class="sg-num" id="sg-mitigations">—</div>
+                <div class="sg-label">Mitigations</div>
+              </div>
+              <div class="sg-stat">
+                <div class="sg-num" id="sg-cases">—</div>
+                <div class="sg-label">Case Studies</div>
+              </div>
+              <div class="sg-stat">
+                <div class="sg-num" id="sg-paths">—</div>
+                <div class="sg-label">Attack Paths</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pipeline-connector">
+          <div class="connector-line"></div>
+          <div class="connector-arrow">↓</div>
+        </div>
+
+        <!-- Stage 3 -->
+        <div class="stage-card" id="stage-3" data-state="idle">
+          <div class="stage-header">
+            <div class="stage-num">3</div>
+            <div class="stage-info">
+              <div class="stage-title">G-Generation</div>
+              <div class="stage-subtitle">§7 · LLM receives subgraph only — no hallucination possible</div>
+            </div>
+            <div class="stage-status-icon" id="stage-3-icon">
+              <div class="spinner"></div>
+            </div>
+          </div>
+          <div class="stage-body hidden" id="stage-3-body">
+            <div class="stage-row">
+              <span class="stage-row-label">Generating structured assessment with traceable citations…</span>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /pipeline-stages -->
+    </section>
+
+    <!-- ── RESULTS ───────────────────────────────────────────────────────── -->
+    <section class="results-section hidden" id="section-results">
+
+      <!-- TOOLBAR -->
+      <div class="results-toolbar">
+        <div class="results-toolbar-left">
+          <div class="results-badge">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg>
+            Assessment Complete
+          </div>
+        </div>
+        <div class="results-toolbar-right">
+          <button class="btn-tool" id="btn-copy" title="Copy report text">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            Copy
+          </button>
+          <button class="btn-tool" id="btn-export" title="Download threat-modelling report as HTML">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export Report
+          </button>
+          <button class="btn-tool" id="btn-new" title="Run a new assessment">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+            New Assessment
+          </button>
+        </div>
+      </div>
+
+      <!-- TWO-COLUMN LAYOUT -->
+      <div class="results-layout">
+
+        <!-- LEFT: REPORT -->
+        <div class="report-panel">
+          <div class="report-content" id="report-content"></div>
+        </div>
+
+        <!-- RIGHT: SIDEBAR -->
+        <aside class="sidebar">
+
+          <!-- Meta stats -->
+          <div class="sidebar-card">
+            <div class="sidebar-card-title">Graph Stats</div>
+            <div class="sidebar-stats">
+              <div class="sbs-item">
+                <div class="sbs-num" id="sbs-techniques">0</div>
+                <div class="sbs-label">Techniques</div>
+              </div>
+              <div class="sbs-item">
+                <div class="sbs-num" id="sbs-mitigations">0</div>
+                <div class="sbs-label">Mitigations</div>
+              </div>
+              <div class="sbs-item">
+                <div class="sbs-num" id="sbs-cases">0</div>
+                <div class="sbs-label">Case Studies</div>
+              </div>
+              <div class="sbs-item">
+                <div class="sbs-num" id="sbs-paths">0</div>
+                <div class="sbs-label">Attack Paths</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Components -->
+          <div class="sidebar-card">
+            <div class="sidebar-card-title">System Components</div>
+            <div class="chip-list vertical" id="sidebar-components"></div>
+          </div>
+
+          <!-- Attack Sequences -->
+          <div class="sidebar-card" id="sidebar-sequences-card">
+            <div class="sidebar-card-title">Attack Sequences</div>
+            <div id="sidebar-sequences"></div>
+          </div>
+
+          <!-- Legend -->
+          <div class="sidebar-card">
+            <div class="sidebar-card-title">Citation Legend</div>
+            <div class="legend-list">
+              <div class="legend-item">
+                <span class="citation citation-technique">AML.T####</span>
+                <span class="legend-desc">Technique</span>
+              </div>
+              <div class="legend-item">
+                <span class="citation citation-mitigation">AML.M####</span>
+                <span class="legend-desc">Mitigation</span>
+              </div>
+              <div class="legend-item">
+                <span class="citation citation-case-study">AML.CS####</span>
+                <span class="legend-desc">Case Study</span>
+              </div>
+              <div class="legend-item">
+                <span class="citation citation-tactic">AML.TA####</span>
+                <span class="legend-desc">Tactic</span>
+              </div>
+            </div>
+          </div>
+
+        </aside>
+      </div><!-- /results-layout -->
+    </section>
+
+    <!-- ── ERROR TOAST ───────────────────────────────────────────────────── -->
+    <div class="toast hidden" id="toast">
+      <div class="toast-icon">⚠</div>
+      <div class="toast-message" id="toast-message"></div>
+      <button class="toast-close" id="toast-close">✕</button>
+    </div>
+
+  </main>
+
+  <!-- ── FOOTER ─────────────────────────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <span>ATLAS Reasoning Engine · Voyverse Technical Assessment · Step 3</span>
+      <span class="footer-sep">·</span>
+      <span>GraphRAG Pipeline · <a href="https://arxiv.org/abs/2408.08921" target="_blank">arXiv:2408.08921</a></span>
+      <span class="footer-sep">·</span>
+      <span>Source: <a href="https://atlas.mitre.org" target="_blank">MITRE ATLAS</a></span>
+    </div>
+  </footer>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
