@@ -2,31 +2,42 @@
 
 A queryable knowledge graph of MITRE ATLAS built with Neo4j.
 Enables auditors and security engineers to ask structured questions
-about adversarial AI threats grounded in the graph.
+about adversarial AI threats grounded in the graph — not free-text LLM responses.
+
+---
 
 ## Graph statistics
 
 | Element | Count |
 |---|---|
 | Tactics | 16 |
-| Techniques | 170 |
+| Techniques | 101 |
+| SubTechniques | 69 |
 | Mitigations | 35 |
 | Case Studies | 57 |
-| EMPLOYS relationships | 449 |
-| MITIGATED_BY relationships | 246 |
-| BELONGS_TO relationships | 111 |
+| Platforms | 4 |
+| EMPLOYS | 449 |
+| TARGETS | 335 |
+| FOLLOWED_BY | 328 |
+| MITIGATED_BY | 246 |
+| BELONGS_TO | 111 |
+| SUBTECHNIQUE_OF | 69 |
+
 
 ## Schema
-
 (CaseStudy)-[:EMPLOYS]->(Technique)-[:BELONGS_TO]->(Tactic)
 
 (Technique)-[:MITIGATED_BY]->(Mitigation)
 
-(SubTechnique)-[:SUBTECHNIQUE_OF]->(Technique)
+(Technique)-[:TARGETS]->(Platform)
 
 (Technique)-[:FOLLOWED_BY]->(Technique)
 
-(Technique)-[:TARGETS]->(Platform)
+(SubTechnique)-[:SUBTECHNIQUE_OF]->(Technique)
+
+(SubTechnique)-[:BELONGS_TO]->(Tactic)
+
+(SubTechnique)-[:MITIGATED_BY]->(Mitigation)
 
 ## Setup
 
@@ -62,38 +73,57 @@ Expected output:
 ✅ Relationships loaded
 
 ### Run queries
-Open http://localhost:7474 and copy queries from `queries.cypher`
+
+Open http://localhost:7474 and copy queries from `queries.cypher`.
+
+---
 
 ## Ingestion strategy
 
-Two-file approach:
-- **v6 YAML** (`Data/v6/ATLAS-2026.05.yaml`) — tactics, techniques,
-  case studies, attack sequence relationships
-- **Legacy YAML** (`Data/legacy/ATLAS-5.6.0.yaml`) — mitigation→technique
-  links which are absent from the v6 format
+Two-file approach combining:
+
+- **v6 YAML** (`Data/v6/ATLAS-2026.05.yaml`) — current format containing
+  tactics, techniques, case studies, and attack sequence relationships
+  (EMPLOYS with step-level procedure descriptions and leads-to chains)
+- **Legacy YAML** (`Data/legacy/ATLAS-5.6.0.yaml`) — older format preserved
+  for its mitigation→technique links, which were dropped from the v6 format,
+  and for reliable BELONGS_TO (Technique → Tactic) edges
+
+This two-file strategy was a necessary engineering decision: the v6 format
+is richer for techniques and case studies; the legacy format is the only
+reliable source for mitigation-to-technique mapping. Combining both produces
+a complete graph with no missing edges.
+
+---
 
 ## Design choices
 
 **Why Neo4j?**
-ATLAS data is inherently graph-structured. A relational database
-would require complex JOIN chains to answer questions like
-"give me the full path from tactic to technique to mitigation".
-Neo4j's native graph traversal makes this a single Cypher statement.
+ATLAS data is inherently graph-structured. A relational database would require
+complex multi-table JOINs to answer questions like "give me the full path from
+tactic to technique to mitigation across all real incidents." Neo4j's native
+graph traversal makes this a single readable Cypher statement. Variable-length
+path queries (FOLLOWED_BY chains modelling multi-step attack sequences) have
+no natural equivalent in SQL.
 
-**Why this schema?**
-Four primary node types mirror the ATLAS taxonomy directly:
-Tactic, Technique, Mitigation, CaseStudy. SubTechnique is modelled
-as a separate label to distinguish parent-child technique hierarchies.
-Relationships are typed and directional so queries read naturally.
+**Why separate Technique and SubTechnique labels?**
+Modelling SubTechniques as a distinct node label rather than a boolean flag
+allows queries to target either level independently. The SUBTECHNIQUE_OF
+relationship makes the parent-child hierarchy explicit and traversable.
+This matters for auditors: a technique like "Craft Adversarial Data" has
+sub-techniques with meaningfully different threat profiles and mitigations.
 
 **Why two YAML files?**
-The v6 format dropped the techniques field from mitigations.
-The legacy 5.6.0 file preserves those links. Combining both files
-gives a complete graph with no missing edges.
+The v6 format dropped the `techniques` field from mitigation objects, making
+it impossible to build MITIGATED_BY edges from v6 alone. The legacy 5.6.0
+file preserves those links. Combining both files gives a complete graph with
+no missing edges.
+
+---
 
 ## Example queries
 
-**Q1 — Which techniques appear most in real attacks?**
+**Q1 — Which techniques appear most in real-world attacks?**
 ```cypher
 MATCH (c:CaseStudy)-[:EMPLOYS]->(te)
 WHERE te:Technique OR te:SubTechnique
@@ -110,11 +140,11 @@ ORDER BY ta.name
 LIMIT 20
 ```
 
-**Q3 — Which techniques have no mitigation?**
+**Q3 — Which techniques have no mitigation documented?**
 ```cypher
 MATCH (te)
 WHERE (te:Technique OR te:SubTechnique)
-AND NOT (te)-[:MITIGATED_BY]->(:Mitigation)
+  AND NOT (te)-[:MITIGATED_BY]->(:Mitigation)
 RETURN te.name AS unmitigated_technique
 ORDER BY te.name
 ```
@@ -126,25 +156,50 @@ RETURN ta.name, count(DISTINCT c) AS nb_attacks
 ORDER BY nb_attacks DESC
 ```
 
-**Q5 — Voyverse's question: techniques targeting RAG inference**
+**Q5 — Voyverse's question: techniques targeting RAG inference + mitigations**
 ```cypher
 MATCH (te)-[:BELONGS_TO]->(ta:Tactic)
 WHERE (te:Technique OR te:SubTechnique)
-AND (
-  toLower(te.description) CONTAINS "rag"
-  OR toLower(te.description) CONTAINS "retrieval"
-  OR toLower(te.description) CONTAINS "inference"
-  OR toLower(te.description) CONTAINS "language model"
-)
+  AND (
+       toLower(te.description) CONTAINS "rag"
+    OR toLower(te.description) CONTAINS "retrieval"
+    OR toLower(te.description) CONTAINS "inference"
+    OR toLower(te.description) CONTAINS "language model"
+  )
 OPTIONAL MATCH (te)-[:MITIGATED_BY]->(m:Mitigation)
-RETURN ta.name AS tactic,
-       te.name AS technique,
+RETURN ta.name         AS tactic,
+       te.name         AS technique,
        collect(m.name) AS mitigations
 ORDER BY ta.name
 ```
 
-## Tools used
-- Neo4j Community Edition
-- Python 3.10 + PyYAML
-- Claude (Anthropic) — assisted with schema design and ingestion logic
+---
 
+## Project structure
+
+MITRE ATLAS/
+
+├── Data/
+
+│   ├── legacy/
+
+│   │   └── ATLAS-5.6.0.yaml
+
+│   └── v6/
+
+│       └── ATLAS-2026.05.yaml
+
+├── ingestion.py
+
+├── queries.cypher
+
+├── requirements.txt
+
+└── README.md
+
+---
+
+## Tools used
+
+- Neo4j Community Edition — graph storage and Cypher query engine
+- Python 3.10 + PyYAML — YAML parsing and graph ingestion
