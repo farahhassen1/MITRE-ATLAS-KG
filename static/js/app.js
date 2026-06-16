@@ -107,6 +107,7 @@ async function checkHealth() {
 
     setHealthDot("neo4j", data.neo4j);
     setHealthDot("api",   data.llm_api);
+    window.ATLAS_APP_VERSION = data.app_version || "unknown";
   } catch {
     setHealthDot("neo4j", false);
     setHealthDot("api",   false);
@@ -224,8 +225,8 @@ function parseSSEChunk(raw) {
   try {
     const payload = JSON.parse(data);
     handleEvent(event, payload);
-  } catch {
-    /* ignore malformed */
+  } catch (err) {
+    showToast(`UI event error: ${err.message}`);
   }
 }
 
@@ -284,6 +285,10 @@ function onSubgraph({ techniques, mitigations, case_studies, attack_sequences })
 }
 
 function onResult({ assessment, components, search_terms, subgraph }) {
+  assessment = String(assessment || "");
+  components = components || [];
+  search_terms = search_terms || [];
+  subgraph = subgraph || {};
   currentResult = { assessment, components, search_terms, subgraph };
 
   // Populate sidebar
@@ -313,8 +318,13 @@ function onResult({ assessment, components, search_terms, subgraph }) {
     });
   }
 
-  // Render report
-  document.getElementById("report-content").innerHTML = renderReport(assessment);
+  // Render report. Put escaped raw text in first so the result is never blank
+  // if the markdown enhancement throws.
+  const reportEl = document.getElementById("report-content");
+  reportEl.innerHTML = `<pre class="raw-report">${esc(assessment)}</pre>`;
+  if (assessment.trim()) {
+    reportEl.innerHTML = renderReport(assessment);
+  }
   sectionResults.classList.remove("hidden");
   sectionResults.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -326,11 +336,20 @@ function onDone() {
   setBtnLoading(false);
 }
 
-function onError({ message }) {
-  showToast(message || "An error occurred.");
-  setStageState(stage1Card, "error");
-  setStageState(stage2Card, "error");
-  setStageState(stage3Card, "error");
+function onError({ message, type, stage }) {
+  const prefix = type ? `${type}${stage ? ` at stage ${stage}` : ""}: ` : "";
+  showToast(`${prefix}${message || "An error occurred."}`);
+  // Only flag the stage that was actually in-flight when the failure hit —
+  // stages already marked "done" genuinely succeeded, and stages that never
+  // started shouldn't be painted red (that previously made every failure
+  // look like all three pipeline phases broke, even when only one did).
+  for (const card of [stage1Card, stage2Card, stage3Card]) {
+    if (card.dataset.state === "active") {
+      setStageState(card, "error");
+    } else if (card.dataset.state === "idle") {
+      setStageState(card, "idle");
+    }
+  }
   setBtnLoading(false);
 }
 
