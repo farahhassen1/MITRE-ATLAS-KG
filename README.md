@@ -133,6 +133,28 @@ Attack paths retrieved: 15
 - [AML.T0054] LLM Jailbreak ...
 ```
 
+## Evaluation
+
+I evaluate this project on five things: graph coverage, retrieval quality, grounding, latency, and reliability.
+
+| Area | Why it matters | Current signal |
+|---|---|---|
+| Graph coverage | The system can only reason over what exists in Neo4j. | Graph contains 16 tactics, 170 techniques/sub-techniques, 35 mitigations, and 57 case studies. |
+| Retrieval quality | The report depends on finding relevant ATLAS evidence. | A recent RAG chatbot run retrieved 22 techniques, 18 mitigations, 12 case studies, and 15 attack paths. |
+| Grounding | Output should cite real ATLAS nodes, not invented facts. | Reports cite ATLAS IDs such as `[AML.T0051]`; `evaluation/grounding.py` checks whether cited IDs exist in Neo4j. |
+| Latency | Hosted 70B generation can be slow on large prompts. | The app trims context and falls back to a local graph-based report if the LLM times out or returns empty text. |
+| Reliability | The reader needs a working interface, not only a CLI demo. | `/health` checks Neo4j and LLM availability; reports are saved under `assessments/`. |
+
+What the numbers say: retrieval is broad enough to give useful coverage for RAG-style systems, especially because it returns techniques, mitigations, incidents, and paths together. The weakest point is generation latency, not retrieval. That is why the app includes context trimming and fallback report generation.
+
+To reproduce evaluation locally:
+
+```powershell
+python evaluation/coverage.py
+python evaluation/grounding.py
+python precision.py
+```
+
 ## Troubleshooting
 
 ### Neo4j is not reachable
