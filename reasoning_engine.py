@@ -41,16 +41,6 @@ Architecture (v2 — Multi-Hop Graph-Native Retrieval):
                  No hallucination: if a node is not in the subgraph
                  it cannot appear in the output.
 
-v2 improvements over v1:
-  - Multi-hop graph traversal replaces flat vector/keyword retrieval
-  - Tactic-guided seed filtering narrows the search space
-  - Graph-structural scoring replaces arbitrary top-k cutoff
-  - Adaptive broadening: auto-retry without tactic filter if sparse
-  - Attack chain expansion (FOLLOWED_BY up to 2 hops)
-  - Mitigation-neighbour discovery (shared-defence reasoning)
-  - 4× more case studies and 1.5× more attack sequences retrieved
-  - Scoring metadata exposed in serialised subgraph for transparency
-
 Run:
     python reasoning_engine.py
 Then describe your AI system when prompted. Press Enter twice to submit.
